@@ -50,8 +50,8 @@ const Footer = () => {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <Mail size={16} className="text-gold mt-0.5 shrink-0" />
-                <a href="mailto:info@zeropointgeomatics.co.za" className="hover:text-gold transition-colors">
-                  info@zeropointgeomatics.co.za
+                <a href="mailto:info@zeropointgeo.co.za" className="hover:text-gold transition-colors">
+                  info@zeropointgeo.co.za
                 </a>
               </li>
               <li className="flex items-start gap-2">

@@ -3,6 +3,10 @@ import { Construct } from 'constructs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
+import * as integrations from 'aws-cdk-lib/aws-apigatewayv2-integrations';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 
 interface ExtendedStackProps extends cdk.StackProps {
   deployRegion: string;
@@ -53,5 +57,34 @@ export class InfrastructureStack extends cdk.Stack {
       ],
     });
 
+    // Contact Form Lambda
+    const contactFormFn = new NodejsFunction(this, 'ContactFormFunction', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      entry: 'src/lambdas/contact-form.ts',
+      handler: 'lambdaHandler',
+      bundling: {
+        externalModules: ['@aws-sdk/*'],
+      },
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 256,
+      environment: {
+        TENANT_ID: process.env.MS_TENANT_ID || '',
+        CLIENT_ID: process.env.MS_CLIENT_ID || '',
+        CLIENT_SECRET: process.env.MS_CLIENT_SECRET || '',
+      },
+    });
+
+    // -=== API Gateway ===-
+    const api = new apigatewayv2.HttpApi(this, 'ZeroPointContactAPI', {
+      apiName: 'ZeroPointContactAPI',
+      description: 'ZeroPoint Contact API',
+      createDefaultStage: true,
+    });
+
+    api.addRoutes({
+      path: '/api/contact-form',
+      methods: [apigatewayv2.HttpMethod.POST],
+      integration: new integrations.HttpLambdaIntegration('ContactFormIntegration', contactFormFn),
+    });
   }
 }

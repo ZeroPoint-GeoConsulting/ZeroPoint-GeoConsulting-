@@ -42,3 +42,7 @@ jobs:
       - name: Deploy CDK Stack
         working-directory: ./infrastructure
         run: npx cdk deploy --require-approval=never
+        env:
+          MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
