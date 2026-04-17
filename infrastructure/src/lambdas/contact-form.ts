@@ -1,7 +1,7 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { REQUIRED_FIELDS, type ContactPayload } from "../helpers/types";
 import { respond } from "../helpers/cors";
-import { ContactPayload, REQUIRED_FIELDS } from "../helpers/types";
-import { getAccessToken } from "../helpers/auth";
+import { getGraphClient } from "../helpers/auth";
 import { buildEmailPayload, sendMail } from "../helpers/email";
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -19,12 +19,13 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
       return respond(400, { error: `Missing fields: ${missing.join(", ")}` }, origin);
     }
 
-    const token = await getAccessToken();
-    const payload = buildEmailPayload(body);
-    await sendMail(token, payload);
+    const client = await getGraphClient();
+    const message = buildEmailPayload(body);
+    await sendMail(client, message);
 
     return respond(200, { message: "Enquiry sent successfully" }, origin);
   } catch (err) {
-    return respond(500, { error: "Failed to send enquiry. Please try again." }, origin);
+    console.error("Contact form error:", err);
+    return respond(500, { error: err instanceof Error ? err.message : "Unknown error" }, origin);
   }
 };

@@ -1,4 +1,5 @@
-import { SENDER, MAX_ATTACHMENT_BYTES, type ContactPayload } from "./types.js";
+import type { Client } from "@microsoft/microsoft-graph-client";
+import { SENDER, MAX_ATTACHMENT_BYTES, type ContactPayload } from "./types";
 
 export function buildEmailPayload(body: ContactPayload) {
   const message: Record<string, unknown> = {
@@ -37,21 +38,9 @@ export function buildEmailPayload(body: ContactPayload) {
     ];
   }
 
-  return { message, saveToSentItems: true };
+  return message;
 }
 
-export async function sendMail(token: string, payload: Record<string, unknown>): Promise<void> {
-  const res = await fetch(`https://graph.microsoft.com/v1.0/users/${SENDER}/sendMail`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const error = await res.text();
-    throw new Error(`Graph API error ${res.status}: ${error}`);
-  }
+export async function sendMail(client: Client, message: Record<string, unknown>): Promise<void> {
+  await client.api(`/users/${SENDER}/sendMail`).post({ message, saveToSentItems: true });
 }

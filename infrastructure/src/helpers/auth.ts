@@ -1,19 +1,22 @@
-export async function getAccessToken(): Promise<string> {
-  const res = await fetch(
-    `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: process.env.CLIENT_ID!,
-        client_secret: process.env.CLIENT_SECRET!,
-        scope: "https://graph.microsoft.com/.default",
-        grant_type: "client_credentials",
-      }),
-    }
+import { ClientSecretCredential } from "@azure/identity";
+import { Client } from "@microsoft/microsoft-graph-client";
+import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials";
+
+let _appClient: Client | undefined;
+
+export async function getGraphClient(): Promise<Client> {
+  if (_appClient) return _appClient;
+
+  const credential = new ClientSecretCredential(
+    process.env.TENANT_ID!,
+    process.env.CLIENT_ID!,
+    process.env.CLIENT_SECRET!
   );
 
-  if (!res.ok) throw new Error(`Token request failed: ${res.status}`);
-  const { access_token } = (await res.json()) as { access_token: string };
-  return access_token;
+  const authProvider = new TokenCredentialAuthenticationProvider(credential, {
+    scopes: ["https://graph.microsoft.com/.default"],
+  });
+
+  _appClient = Client.initWithMiddleware({ authProvider });
+  return _appClient;
 }
