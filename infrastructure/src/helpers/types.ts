@@ -1,5 +1,5 @@
 export const REQUIRED_FIELDS = ["name", "email", "projectType", "message"] as const;
-export const SENDER = "Khutso.Nkuna@zeropointgeo.co.za";
+export const SENDER = "info@zeropointgeo.co.za";
 export const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 export const ALLOWED_ORIGINS = [
   "https://zeropointgeo.co.za",
